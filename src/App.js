@@ -1,24 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import { useEffect, useState } from "react";
+import "./App.css";
+import { Photo } from "./components/Photo";
 
 function App() {
+  const [photos, setphoto] = useState([]);
+
+  useEffect(() => {
+
+    const client_key = "WZWRgHppWsu2EHgdUifxGhcbfJSAdrvcFdRLby6S-Vc";
+    const page = "1";
+    const url =
+      "https://api.unsplash.com/photos/?client_id=" +
+      client_key +
+      "&page=" +
+      page;
+
+    const fetchImage = async () => {
+      const response = await fetch(url);
+      const data = await response.json();
+      setphoto(data);
+    };
+
+    fetchImage();
+    
+  }, []);
+
+  if (photos.length === 0) {
+    return <div>loading...</div>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <main>
+      <h1>Infinite Scroll | Unsplash API</h1>
+      <section className="section-photo">
+        <div className="display-photo">
+          {photos.map((data, index) => {
+            return <Photo key={data.id} {...data} />;
+          })}
+        </div>
+      </section>
+    </main>
   );
 }
 
