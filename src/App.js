@@ -4,11 +4,11 @@ import { Photo } from "./components/Photo";
 
 function App() {
   const [photos, setphoto] = useState([]);
+  const [page, setpage] = useState(1);
+  const [loading, setloading] = useState(false);
 
   useEffect(() => {
-
     const client_key = "WZWRgHppWsu2EHgdUifxGhcbfJSAdrvcFdRLby6S-Vc";
-    const page = "1";
     const url =
       "https://api.unsplash.com/photos/?client_id=" +
       client_key +
@@ -16,13 +16,41 @@ function App() {
       page;
 
     const fetchImage = async () => {
-      const response = await fetch(url);
-      const data = await response.json();
-      setphoto(data);
+      if (!loading) {
+        console.log("get photo from server");
+
+        setloading(true);
+
+        try {
+          const response = await fetch(url);
+          const data = await response.json();
+          setphoto((old_data) => {
+            return [...old_data, ...data];
+          });
+        } catch (error) {
+          console.log(error);
+        }
+
+        setloading(false);
+      }
     };
 
     fetchImage();
-    
+  }, [page]);
+
+  useEffect(() => {
+    const event = window.addEventListener("scroll", () => {
+      if (
+        window.innerHeight + window.scrollY >
+        document.body.offsetHeight - 500
+      ) {
+        setpage((old_page) => {
+          return old_page + 1;
+        });
+      }
+    });
+
+    return () => window.removeEventListener("scroll", event);
   }, []);
 
   if (photos.length === 0) {
@@ -35,10 +63,11 @@ function App() {
       <section className="section-photo">
         <div className="display-photo">
           {photos.map((data, index) => {
-            return <Photo key={data.id} {...data} />;
+            return <Photo key={index} {...data} />;
           })}
         </div>
       </section>
+      {loading ? <div className="text-center">กำลังโหลดข้อมูล...</div> : null}
     </main>
   );
 }
